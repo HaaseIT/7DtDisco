@@ -21,7 +21,7 @@ public class EventListener {
     public void onMessageReceivedEvent(MessageReceivedEvent event) {
         System.out.println(event.getMessage() + " " + event.getChannel().getStringID() + " " + event.getGuild());
 
-        // event.getGuild() == null -> direct message
+        // event.getChannel().isPrivate() -> direct message
 
         if (event.getChannel().getStringID().equals(channel)) {
             System.out.println("hooray");
