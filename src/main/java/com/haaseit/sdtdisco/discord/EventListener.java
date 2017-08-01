@@ -19,6 +19,8 @@ public class EventListener {
 
     @EventSubscriber
     public void onMessageReceivedEvent(MessageReceivedEvent event) {
+        // todo: if the bot is ofline, will messages be delivered once it comes back on? will I have to clear the messages at startup?
+
         System.out.println(event.getMessage() + " " + event.getChannel().getStringID() + " " + event.getGuild());
 
         // event.getChannel().isPrivate() -> direct message
