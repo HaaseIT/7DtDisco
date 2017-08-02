@@ -13,13 +13,15 @@ public class Main {
     public static void main(String[] args) {
         Options options = new Options();
         options.addOption("token", true, "The discord auth token for the bot.");
-        options.addOption("guild", true, "The discord guild to listen to.");
+//        options.addOption("guild", true, "The discord guild to listen to.");
         options.addOption("channel", true, "The discord channel to listen to.");
+        options.addOption("adminchannel", true, "The discord admin channel to listen to.");
 
         CommandLineParser parser = new DefaultParser();
 
         String token = null;
         String channel = null;
+        String adminchannel = null;
         try {
             CommandLine line = parser.parse(options, args);
             if (line.hasOption("token")) {
@@ -32,6 +34,9 @@ public class Main {
             } else {
                 throw new ParseException("The channel is missing.");
             }
+            if (line.hasOption("channel")) {
+                adminchannel = line.getOptionValue("adminchannel");
+            }
         } catch (ParseException e) {
             System.err.println( "Parsing CLI arguments failed.  Reason: " + e.getMessage() );
             System.exit(1);
@@ -41,7 +46,7 @@ public class Main {
 
         IDiscordClient discordClient = createClient(token, true);
         EventDispatcher discordDispatcher = discordClient.getDispatcher();
-        discordDispatcher.registerListener(new EventListener(channel));
+        discordDispatcher.registerListener(new EventListener(channel, adminchannel));
 
 
     }
