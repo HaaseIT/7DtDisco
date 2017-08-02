@@ -1,12 +1,18 @@
 package com.haaseit.sdtdisco;
 
 import com.haaseit.sdtdisco.discord.EventListener;
+import com.haaseit.sdtdisco.telnet.MessageHandler;
+import com.haaseit.sdtdisco.telnet.TelnetHandler;
 import org.apache.commons.cli.*;
+import org.apache.commons.net.telnet.TelnetClient;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventDispatcher;
 import sx.blah.discord.util.DiscordException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 
 public class Main {
 
@@ -16,25 +22,40 @@ public class Main {
 //        options.addOption("guild", true, "The discord guild to listen to.");
         options.addOption("channel", true, "The discord channel to listen to.");
         options.addOption("adminchannel", true, "The discord admin channel to listen to.");
+        options.addOption("7dtdhost", true, "The 7dtd Server host/ip.");
+        options.addOption("7dtdport", true, "The 7dtd Server telnet port.");
+        options.addOption("7dtdpwd", true, "The 7dtd Server telnet password");
 
         CommandLineParser parser = new DefaultParser();
 
         String token = null;
         String channel = null;
         String adminchannel = null;
+        String sdtdhost = null;
+        String sdtdport = null;
+        String sdtdpwd = null;
+        String[] requiredoptions = {
+                "token",
+                "channel",
+                "7dtdhost",
+                "7dtdport",
+                "7dtdpwd",
+        };
         try {
             CommandLine line = parser.parse(options, args);
-            if (line.hasOption("token")) {
-                token = line.getOptionValue("token");
-            } else {
-                throw new ParseException("The token is missing.");
+
+            for (int i = 0; i < requiredoptions.length; i++) {
+                if (!line.hasOption(requiredoptions[i])) {
+                    throw new ParseException("Argument missing:" + requiredoptions[i]);
+                }
             }
-            if (line.hasOption("channel")) {
-                channel = line.getOptionValue("channel");
-            } else {
-                throw new ParseException("The channel is missing.");
-            }
-            if (line.hasOption("channel")) {
+            token = line.getOptionValue("token");
+            channel = line.getOptionValue("channel");
+            sdtdhost = line.getOptionValue("7dtdhost");
+            sdtdport = line.getOptionValue("7dtdport");
+            sdtdpwd = line.getOptionValue("7dtdpwd");
+
+            if (line.hasOption("adminchannel")) {
                 adminchannel = line.getOptionValue("adminchannel");
             }
         } catch (ParseException e) {
@@ -42,12 +63,38 @@ public class Main {
             System.exit(1);
         }
 
+        try {
+            // discord
+            IDiscordClient discordClient = createClient(token, true);
+            EventDispatcher discordDispatcher = discordClient.getDispatcher();
+
+            // telnet
+            TelnetClient tc = new TelnetClient();
+            tc.connect(sdtdhost, Integer.parseInt(sdtdport));
+            InputStream in = tc.getInputStream();
+            PrintStream out = new PrintStream(tc.getOutputStream());
+
+            TelnetHandler th = new TelnetHandler(in, out, tc);
+
+            MessageHandler messageHandler = new MessageHandler(discordClient, th);
+
+            discordDispatcher.registerListener(new EventListener(channel, adminchannel, messageHandler));
+
+            th.readUntil("Please enter password:\r\n");
+            th.write(sdtdpwd);
+            th.readUntil("Logon successful.\r\n");
+            th.readUntil("Press 'help' to get a list of all commands. Press 'exit' to end session.\r\n");
+
+            Thread reader = th.startReader();
+            reader.run();
 
 
-        IDiscordClient discordClient = createClient(token, true);
-        EventDispatcher discordDispatcher = discordClient.getDispatcher();
-        discordDispatcher.registerListener(new EventListener(channel, adminchannel));
-
+            th.close();
+        } catch (IOException e) {
+            // todo
+        } catch (Exception e) {
+            // todo
+        }
 
     }
 
