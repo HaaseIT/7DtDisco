@@ -78,6 +78,8 @@ public class Main {
 
             MessageHandler messageHandler = new MessageHandler(discordClient, th);
 
+            th.setMessageHandler(messageHandler);
+
             discordDispatcher.registerListener(new EventListener(channel, adminchannel, messageHandler));
 
             th.readUntil("Please enter password:\r\n");
@@ -91,9 +93,10 @@ public class Main {
 
             th.close();
         } catch (IOException e) {
-            // todo
+            System.out.println(e.getMessage());
         } catch (Exception e) {
-            // todo
+            System.out.println(e.getMessage());
+            e.printStackTrace(System.out);
         }
 
     }
