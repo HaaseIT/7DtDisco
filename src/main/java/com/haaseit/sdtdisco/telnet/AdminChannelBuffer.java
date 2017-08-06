@@ -7,10 +7,10 @@ import java.util.Date;
 
 
 public class AdminChannelBuffer {
-    private String buffer = "";
-    private boolean isRunning = false;
+    private volatile String buffer = "";
+    private volatile boolean isRunning = false;
     private IChannel adminChannel = null;
-    private long lastWrite = 0;
+    private volatile long lastWrite = 0;
 
     public AdminChannelBuffer(IChannel adminChannel) {
         this.adminChannel = adminChannel;
@@ -28,10 +28,12 @@ public class AdminChannelBuffer {
                     while (isRunning)
                     {
                         // todo: zeit seit letztem writeToBuffer messen, wenn länger als 1 sekunde und buffer != null flush()
-                        buffer = getBuffer();
-                        if (getLastWrite() != 0 && !buffer.isEmpty()) {
+                        if (buffer.length() >= 1000) {
+                            flush();
+                        }
+                        if (lastWrite != 0 && !buffer.isEmpty()) {
                             long now = new Date().getTime();
-                            if (now - getLastWrite() > 1) {
+                            if (now - lastWrite > 1) {
                                 flush();
                             }
                         }
@@ -49,20 +51,9 @@ public class AdminChannelBuffer {
         isRunning = false;
     }
 
-    public String getBuffer() {
-        return buffer;
-    }
-
-    public long getLastWrite() {
-        return lastWrite;
-    }
-
     public void writeToBuffer(String line) {
         buffer += line + "\n";
         lastWrite = new Date().getTime();
-        if (buffer.length() >= 1000) {
-            flush();
-        }
     }
 
     public void flush() {
