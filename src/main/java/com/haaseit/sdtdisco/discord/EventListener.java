@@ -1,6 +1,5 @@
 package com.haaseit.sdtdisco.discord;
 
-
 import com.haaseit.sdtdisco.Helper;
 import com.haaseit.sdtdisco.telnet.MessageHandler;
 import sx.blah.discord.api.events.EventSubscriber;
@@ -21,10 +20,10 @@ public class EventListener {
     @EventSubscriber
     public void onReadyEvent(ReadyEvent event) {
         messageHandler.setChannel(channel);
+        System.out.println("Discord connection ready.");
         if (adminchannel != null) {
             messageHandler.setAdminChannel(adminchannel);
         }
-        System.out.println("Ready.");
     }
 
     @EventSubscriber
