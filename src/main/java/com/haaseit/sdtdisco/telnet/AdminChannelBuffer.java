@@ -58,9 +58,11 @@ public class AdminChannelBuffer {
 
     public void flush() {
         final String message = buffer;
-        RequestBuffer.request(() -> {
-            adminChannel.sendMessage(message);
-        });
+        if (!message.isEmpty()) {
+            RequestBuffer.request(() -> {
+                adminChannel.sendMessage(message);
+            });
+        }
         buffer = "";
         lastWrite = 0;
     }

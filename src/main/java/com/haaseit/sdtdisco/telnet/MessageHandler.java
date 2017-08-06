@@ -44,7 +44,6 @@ public class MessageHandler {
         if (adminchannel != null) {
             adminChannelBuffer.writeToBuffer(line);
             // todo: wenn servernachricht mit timestamp am anfang eintrifft, buffer flushen
-            String foo = line.substring(4, 5);
             if (line.substring(4, 5).equals("-") && line.substring(7, 8).equals("-") && line.substring(10, 11).equals("T")) {
                 adminChannelBuffer.flush();
             }
