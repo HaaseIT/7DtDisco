@@ -22,18 +22,6 @@ public class TelnetHandler {
         this.messageHandler = messageHandler;
     }
 
-    public String send(String command) throws Exception {
-        try {
-            write(command);
-            readUntil("\n"); // read past echo
-            String result = readUntil("\n");
-            // drop trailing '\n'
-            return result.substring(0, result.length() - 1);
-        } catch (IOException e) {
-            throw new Exception(e);
-        }
-    }
-
     /**
      * Closes the connection.
      */
@@ -67,7 +55,6 @@ public class TelnetHandler {
                 String str = sb.toString();
                 if(str.endsWith(pattern)) {
                     return str;
-//                    return str.substring(0, str.length() - pattern.length());
                 }
             }
         }
@@ -75,7 +62,7 @@ public class TelnetHandler {
         return null;
     }
 
-    public Thread startReader() {
+    public Thread startReader(String sdtdhost, String sdtdport) {
         return new Thread() {
             @Override
             public void run()
@@ -84,15 +71,20 @@ public class TelnetHandler {
 
                 try
                 {
-                    while (true)
-                    {
+                    while (true) {
                         line = readUntil("\r\n");
                         messageHandler.handleMessageFromTelnet(line);
                         System.out.print(line);
+                        if (!tc.isConnected()) {
+                            sleep(5000);
+                            tc.connect(sdtdhost, Integer.parseInt(sdtdport));
+                        }
                     }
                 }
                 catch (IOException e)
                 {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }

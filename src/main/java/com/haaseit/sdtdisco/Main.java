@@ -42,8 +42,8 @@ public class Main {
                 "7dtdpwd",
         };
         try {
+            // get cli arguments
             CommandLine line = parser.parse(options, args);
-
             for (int i = 0; i < requiredoptions.length; i++) {
                 if (!line.hasOption(requiredoptions[i])) {
                     throw new ParseException("Argument missing:" + requiredoptions[i]);
@@ -82,14 +82,14 @@ public class Main {
 
             discordDispatcher.registerListener(new EventListener(channel, adminchannel, messageHandler));
 
+            // logon to 7dtd telnet server
             th.readUntil("Please enter password:\r\n");
             th.write(sdtdpwd);
             th.readUntil("Logon successful.\r\n");
             th.readUntil("Press 'help' to get a list of all commands. Press 'exit' to end session.\r\n");
 
-            Thread reader = th.startReader();
+            Thread reader = th.startReader(sdtdhost, sdtdport);
             reader.run();
-
 
             th.close();
         } catch (IOException e) {
