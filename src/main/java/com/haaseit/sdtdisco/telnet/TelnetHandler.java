@@ -93,7 +93,7 @@ public class TelnetHandler {
                 }
                 catch (IOException e)
                 {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         };
