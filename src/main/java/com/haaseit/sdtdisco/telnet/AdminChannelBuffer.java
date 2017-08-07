@@ -12,11 +12,11 @@ public class AdminChannelBuffer {
     private IChannel adminChannel = null;
     private volatile long lastWrite = 0;
 
-    public AdminChannelBuffer(IChannel adminChannel) {
+    AdminChannelBuffer(IChannel adminChannel) {
         this.adminChannel = adminChannel;
     }
 
-    public Thread startBuffer() {
+    Thread startBuffer() {
         isRunning = true;
 
         return new Thread() {
@@ -51,12 +51,12 @@ public class AdminChannelBuffer {
         isRunning = false;
     }
 
-    public void writeToBuffer(String line) {
+    void writeToBuffer(String line) {
         buffer += line + "\n";
         lastWrite = new Date().getTime();
     }
 
-    public void flush() {
+    void flush() {
         final String message = buffer;
         if (!message.isEmpty()) {
             RequestBuffer.request(() -> {
