@@ -32,6 +32,9 @@ public class MessageHandler {
     }
 
     public void handleMessageFromTelnet(String line) {
+        if (line == null) {
+            return;
+        }
         line = line.trim();
         if (line.equals("")) {
             return;
