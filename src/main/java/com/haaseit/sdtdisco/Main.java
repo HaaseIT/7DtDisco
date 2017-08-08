@@ -4,15 +4,12 @@ import com.haaseit.sdtdisco.discord.EventListener;
 import com.haaseit.sdtdisco.telnet.MessageHandler;
 import com.haaseit.sdtdisco.telnet.TelnetHandler;
 import org.apache.commons.cli.*;
-import org.apache.commons.net.telnet.TelnetClient;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventDispatcher;
 import sx.blah.discord.util.DiscordException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 
 public class Main {
 
@@ -68,13 +65,7 @@ public class Main {
             IDiscordClient discordClient = createClient(token, true);
             EventDispatcher discordDispatcher = discordClient.getDispatcher();
 
-            // telnet
-            TelnetClient tc = new TelnetClient();
-            tc.connect(sdtdhost, Integer.parseInt(sdtdport));
-            InputStream in = tc.getInputStream();
-            PrintStream out = new PrintStream(tc.getOutputStream());
-
-            TelnetHandler th = new TelnetHandler(in, out, tc);
+            TelnetHandler th = new TelnetHandler(sdtdhost, sdtdport, sdtdpwd);
 
             MessageHandler messageHandler = new MessageHandler(discordClient, th);
 
@@ -82,11 +73,6 @@ public class Main {
 
             discordDispatcher.registerListener(new EventListener(channel, adminchannel, messageHandler));
 
-            // logon to 7dtd telnet server
-            th.readUntil("Please enter password:\r\n");
-            th.write(sdtdpwd);
-            th.readUntil("Logon successful.\r\n");
-            th.readUntil("Press 'help' to get a list of all commands. Press 'exit' to end session.\r\n");
 
             Thread reader = th.startReader(sdtdhost, sdtdport);
             reader.run();

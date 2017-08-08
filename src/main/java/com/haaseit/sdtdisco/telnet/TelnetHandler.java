@@ -11,11 +11,16 @@ public class TelnetHandler {
     private PrintStream out;
     private TelnetClient tc;
     private MessageHandler messageHandler;
+    private String sdtdhost;
+    private String sdtdport;
+    private String sdtdpwd;
 
-    public TelnetHandler(InputStream in, PrintStream out, TelnetClient tc) {
-        this.in = in;
-        this.out = out;
-        this.tc = tc;
+    public TelnetHandler(String sdtdhost, String sdtdport, String sdtdpwd) {
+        // telnet
+        this.tc = new TelnetClient();
+        this.sdtdhost = sdtdhost;
+        this.sdtdport = sdtdport;
+        this.sdtdpwd =sdtdpwd;
     }
 
     public void setMessageHandler(MessageHandler messageHandler) {
@@ -72,13 +77,13 @@ public class TelnetHandler {
                 try
                 {
                     while (true) {
+                        if (!tc.isConnected()) {
+                            sleep(5000);
+                            logon();
+                        }
                         line = readUntil("\r\n");
                         messageHandler.handleMessageFromTelnet(line);
                         System.out.print(line);
-                        if (!tc.isConnected()) {
-                            sleep(5000);
-                            tc.connect(sdtdhost, Integer.parseInt(sdtdport));
-                        }
                     }
                 }
                 catch (IOException e)
@@ -98,6 +103,23 @@ public class TelnetHandler {
         out.println(value);
         out.flush();
 //        System.out.println(value);
+    }
+
+    public void logon() {
+        try {
+            this.tc.connect(sdtdhost, Integer.parseInt(sdtdport));
+            this.in = tc.getInputStream();
+            this.out = new PrintStream(tc.getOutputStream());
+
+            // logon to 7dtd telnet server
+            readUntil("Please enter password:\r\n");
+            write(sdtdpwd);
+            readUntil("Logon successful.\r\n");
+            readUntil("Press 'help' to get a list of all commands. Press 'exit' to end session.\r\n");
+            System.out.println("Telnet logon successful.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 // '\u0000' 0
