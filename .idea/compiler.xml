@@ -9,7 +9,7 @@
         <module name="7DtDisco" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8">
       <module name="7DtDisco" target="1.8" />
     </bytecodeTargetLevel>
   </component>
