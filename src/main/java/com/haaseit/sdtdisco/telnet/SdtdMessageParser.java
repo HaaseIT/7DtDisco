@@ -1,24 +1,84 @@
 package com.haaseit.sdtdisco.telnet;
 
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.util.RequestBuffer;
+
 public class SdtdMessageParser {
-/* Logon
-017-08-06T12:15:02 20941.150 INF [NET] PlayerConnected EntityID=-1, PlayerID='', OwnerID='', PlayerName=''
-2017-08-06T12:15:02 20941.307 INF PlayerLogin: Halp/Alpha 16.2
-2017-08-06T12:15:02 20941.307 INF Client IP: 10.0.7.123
-2017-08-06T12:15:02 20941.307 INF [Steamworks.NET] Auth.AuthenticateUser()
-2017-08-06T12:15:02 20941.308 INF [Steamworks.NET] Authenticating player: Halp SteamId: 76561197976155858 TicketLen: 1024 Result: k_EBeginAuthSessionResultOK
-2017-08-06T12:15:02 20941.657 INF [Steamworks.NET] Authentication callback. ID: 76561197976155858, owner: 76561197976155858, result: k_EAuthSessionResponseOK
-2017-08-06T12:15:02 20941.657 INF Steam authentication successful, allowing user: EntityID=-1, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
-2017-08-06T12:15:02 20941.657 INF Allowing player with id 76561197976155858
-2017-08-06T12:15:03 20942.457 INF RequestToEnterGame: 76561197976155858/Halp
-2017-08-06T12:15:11 20950.007 INF RequestToSpawnPlayer: 171, Halp, 8
-2017-08-06T12:15:11 20950.016 INF Created player with id=171
-2017-08-06T12:15:24 20963.531 INF GMSG: Player 'Halp' joined the game
-2017-08-06T12:15:24 20963.531 INF PlayerSpawnedInWorld (reason: JoinMultiplayer, position: -3121, 91, 1078): EntityID=171, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
+    private IChannel channel;
+    private TelnetHandler telnetHandler;
+
+    public SdtdMessageParser(IChannel channel, TelnetHandler telnetHandler) {
+        this.channel = channel;
+        this.telnetHandler = telnetHandler;
+    }
+
+    public void parseDiscordMessageFromChannel(String line) {
+        telnetHandler.write("say \"" + line.replace("\"", "'").replace("&", "") + "\"");
+
+    }
+
+    public void parseTelnetMessageForChannel(String line) {
+        if (line.length() > 48 && line.substring(33, 39).equals("Chat: ") && !line.substring(39, 48).equals("'Server':")) {
+            // 2017-08-10T16:52:19 4356.184 INF Chat: 'LahmeWade': Yeah!
+            final String message = line.substring(39);
+            RequestBuffer.request(() -> {
+                channel.sendMessage(message);
+            });
+        } else if (line.substring(0, 3).equals("Day") || line.substring(0, 13).equals("Game version:")) {
+            /* Result from gettime
+            2017-08-06T12:18:54 21173.339 INF Executing command 'gettime' by Telnet from 10.0.7.123:32776
+            Day 128, 11:24
+            */
+            // Game version: Alpha 16.2 (b7) Compatibility Version: Alpha 16.2
+            final String message = line;
+            RequestBuffer.request(() -> {
+                channel.sendMessage(message);
+            });
+        } else if (
+                line.length() > 50
+                        && line.substring(33, 45).equals("GMSG: Player")
+                        && (
+                                line.substring(line.length() - 4).equals("died")
+                                        || line.substring(line.length() - 15).equals("joined the game")
+                                        || line.substring(line.length() - 13).equals("left the game")
+                )
+                ) {
+            /* Death
+            2017-08-06T12:17:01 21060.664 INF GMSG: Player 'Halp' died
+            */
+            /* Logon
+            017-08-06T12:15:02 20941.150 INF [NET] PlayerConnected EntityID=-1, PlayerID='', OwnerID='', PlayerName=''
+            2017-08-06T12:15:02 20941.307 INF PlayerLogin: Halp/Alpha 16.2
+            2017-08-06T12:15:02 20941.307 INF Client IP: 10.0.7.123
+            2017-08-06T12:15:02 20941.307 INF [Steamworks.NET] Auth.AuthenticateUser()
+            2017-08-06T12:15:02 20941.308 INF [Steamworks.NET] Authenticating player: Halp SteamId: 76561197976155858 TicketLen: 1024 Result: k_EBeginAuthSessionResultOK
+            2017-08-06T12:15:02 20941.657 INF [Steamworks.NET] Authentication callback. ID: 76561197976155858, owner: 76561197976155858, result: k_EAuthSessionResponseOK
+            2017-08-06T12:15:02 20941.657 INF Steam authentication successful, allowing user: EntityID=-1, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
+            2017-08-06T12:15:02 20941.657 INF Allowing player with id 76561197976155858
+            2017-08-06T12:15:03 20942.457 INF RequestToEnterGame: 76561197976155858/Halp
+            2017-08-06T12:15:11 20950.007 INF RequestToSpawnPlayer: 171, Halp, 8
+            2017-08-06T12:15:11 20950.016 INF Created player with id=171
+            2017-08-06T12:15:24 20963.531 INF GMSG: Player 'Halp' joined the game
+            2017-08-06T12:15:24 20963.531 INF PlayerSpawnedInWorld (reason: JoinMultiplayer, position: -3121, 91, 1078): EntityID=171, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
+            */
+            // 2017-08-10T16:42:12 3748.634 INF GMSG: Player 'Ja ne, is klar!' left the game
+            final String message = line.substring(39);
+            RequestBuffer.request(() -> {
+                channel.sendMessage(message);
+            });
+        }
+
+
+    }
+
+/*
+2017-08-10T16:49:31 4187.359 INF Executing command 'listplayers' by Telnet from 10.0.7.123:39330
+0. id=8806, BohnenTon, pos=(-1359.6, 50.1, -412.8), rot=(-18.3, 506.3, 0.0), remote=True, health=52, deaths=151, zombies=201, players=6, score=1, level=50, steamid=76561198511061403, ip=79.226.4.214, ping=39
+1. id=338, LahmeWade, pos=(-1269.1, 44.1, -348.5), rot=(-18.0, -3022.3, 0.0), remote=True, health=72, deaths=210, zombies=795, players=11, score=42, level=100, steamid=76561198254602367, ip=79.226.4.214, ping=33
+2. id=40040, Ja ne, is klar!, pos=(2031.3, 117.0, 482.2), rot=(0.0, 293.9, 0.0), remote=True, health=70, deaths=5, zombies=0, players=0, score=0, level=1, steamid=76561197976476063, ip=10.0.7.123, ping=1
+Total of 3 in the game
 */
-/* Death
-2017-08-06T12:17:01 21060.664 INF GMSG: Player 'Halp' died
-*/
+
 /*
 *** Generic Console Help ***
 To get further help on a specific topic or command type (without the brackets)
@@ -123,8 +183,4 @@ None yet
  whitelist => Manage whitelist entries
  zip => Control zipline settings
  */
-/* Result from gettime
-2017-08-06T12:18:54 21173.339 INF Executing command 'gettime' by Telnet from 10.0.7.123:32776
-Day 128, 11:24
-*/
 }

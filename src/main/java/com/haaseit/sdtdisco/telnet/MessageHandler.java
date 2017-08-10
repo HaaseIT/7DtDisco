@@ -13,15 +13,17 @@ public class MessageHandler {
     private AdminChannelBuffer adminChannelBuffer = null;
     private Thread adminChannelBufferThread = null;
 
+    private SdtdMessageParser messageParser = null;
+
 
     public MessageHandler(IDiscordClient discordClient, TelnetHandler telnetHandler) {
         this.discordClient = discordClient;
         this.telnetHandler = telnetHandler;
-
     }
 
     public void setChannel(String channel) {
         this.channel = discordClient.getChannelByID(Long.parseLong(channel));
+        this.messageParser = new SdtdMessageParser(this.channel, telnetHandler);
     }
 
     public void setAdminChannel(String channel) {
@@ -49,18 +51,12 @@ public class MessageHandler {
             // 2017-08-06T09:07:29 9688.240 INF Executing command 'listplayers' by Telnet from 10.0.7.123:56674
         }
         if (channel != null) {
-            // 2017-08-03T18:17:16 803568.139 INF Chat:
-            if (line.length() > 50 && line.substring(35, 41).equals("Chat: ") && !line.substring(41, 50).equals("'Server':")) {
-                final String message = line.substring(41);
-                RequestBuffer.request(() -> {
-                    channel.sendMessage(message);
-                });
-            }
+            messageParser.parseTelnetMessageForChannel(line);
         }
     }
 
     public void handleMessageFromChannel(String line) {
-        telnetHandler.write("say \"" + line.replace("\"", "'").replace("&", "") + "\"");
+        messageParser.parseDiscordMessageFromChannel(line);
     }
 
     public void handleMessageFromAdminChannel(String line) {
