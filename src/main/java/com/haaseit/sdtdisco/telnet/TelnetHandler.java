@@ -9,7 +9,7 @@ import java.io.PrintStream;
 public class TelnetHandler {
     private InputStream in;
     private PrintStream out;
-    private TelnetClient tc;
+    private volatile TelnetClient tc;
     private MessageHandler messageHandler;
     private String sdtdhost;
     private String sdtdport;
@@ -80,10 +80,13 @@ public class TelnetHandler {
                         if (!tc.isConnected()) {
                             sleep(5000);
                             logon();
+                        } else {
+                            line = readUntil("\r\n");
+                            if (line != null) {
+                                messageHandler.handleMessageFromTelnet(line);
+                                System.out.print(line);
+                            }
                         }
-                        line = readUntil("\r\n");
-                        messageHandler.handleMessageFromTelnet(line);
-                        System.out.print(line);
                     }
                 }
                 catch (IOException e)
