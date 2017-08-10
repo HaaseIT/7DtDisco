@@ -31,7 +31,7 @@ public class EventListener {
         if (event.getChannel().getStringID().equals(channel)) {
             //System.out.println(Helper.getCurrentLocalDateTimeFormatted() + " Channel: " + event.getAuthor().getName() + "> " + event.getMessage().getContent());
             // todo: regular channel should send everything except whitelisted commands (eg. /time) to server by "Say".
-            messageHandler.handleMessageFromChannel(event.getAuthor().getName() + ": " + event.getMessage().getContent());
+            messageHandler.handleMessageFromChannel(event.getAuthor().getName(), event.getMessage().getContent());
         } else if (adminchannel != null && event.getChannel().getStringID().equals(adminchannel)) {
             //System.out.println(Helper.getCurrentLocalDateTimeFormatted() + " Admin: " + event.getAuthor().getName() + "> " + event.getMessage().getContent());
             messageHandler.handleMessageFromAdminChannel(event.getMessage().getContent());

@@ -55,8 +55,8 @@ public class MessageHandler {
         }
     }
 
-    public void handleMessageFromChannel(String line) {
-        messageParser.parseDiscordMessageFromChannel(line);
+    public void handleMessageFromChannel(String author, String line) {
+        messageParser.parseDiscordMessageFromChannel(author, line);
     }
 
     public void handleMessageFromAdminChannel(String line) {

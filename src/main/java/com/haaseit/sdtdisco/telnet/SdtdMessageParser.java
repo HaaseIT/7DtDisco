@@ -12,9 +12,23 @@ public class SdtdMessageParser {
         this.telnetHandler = telnetHandler;
     }
 
-    public void parseDiscordMessageFromChannel(String line) {
-        telnetHandler.write("say \"" + line.replace("\"", "'").replace("&", "") + "\"");
-
+    public void parseDiscordMessageFromChannel(String author, String line) {
+//        String foo = line.substring(0, 1);
+        if (line.substring(0, 1).equals("/")) {
+            if (line.equals("/version")) {
+                telnetHandler.write("version");
+            } else if (line.equals("/time")) {
+                telnetHandler.write("gettime");
+            } else if (line.equals("/help")) {
+                final String message = "Available commands: /time /version /help";
+                RequestBuffer.request(() -> {
+                    channel.sendMessage(message);
+                });
+            }
+        } else {
+            String message = author + ": " + line;
+            telnetHandler.write("say \"" + message.replace("\"", "'").replace("&", "") + "\"");
+        }
     }
 
     public void parseTelnetMessageForChannel(String line) {
