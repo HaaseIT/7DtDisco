@@ -32,12 +32,62 @@ public class SdtdMessageParser {
     }
 
     public void parseTelnetMessageForChannel(String line) {
-        if (line.length() > 48 && line.substring(33, 39).equals("Chat: ") && !line.substring(39, 48).equals("'Server':")) {
-            // 2017-08-10T16:52:19 4356.184 INF Chat: 'LahmeWade': Yeah!
-            final String message = line.substring(39);
-            RequestBuffer.request(() -> {
-                channel.sendMessage(message);
-            });
+        if (
+                line.length() > 20
+                        && line.substring(4,5).equals("-")
+                        && line.substring(7,8).equals("-")
+                        && line.substring(10,11).equals("T")
+                        && line.substring(13,14).equals(":")
+                        && line.substring(16,17).equals(":")
+                        && line.substring(19,20).equals(" ")
+                ) {
+            int endoftimestamp = line.indexOf((int) ' ', 20);
+
+            if (endoftimestamp > 21) {
+                if (line.length() >= endoftimestamp + 17) {
+                    if (
+                            line.substring(endoftimestamp + 5, endoftimestamp + 11).equals("Chat: ")
+                                    && !line.substring(endoftimestamp + 11, endoftimestamp + 20).equals("'Server':")
+                            ) {
+                        // 2017-08-10T16:52:19 4356.184 INF Chat: 'Lahme Wade': Yeah!
+                        final String message = line.substring(39);
+                        RequestBuffer.request(() -> {
+                            channel.sendMessage(message);
+                        });
+                    } else if (
+                            line.substring(endoftimestamp + 5, endoftimestamp + 17).equals("GMSG: Player")
+                                && (
+                                    line.substring(line.length() - 4).equals("died")
+                                            || line.substring(line.length() - 15).equals("joined the game")
+                                            || line.substring(line.length() - 13).equals("left the game")
+                                    )
+                            ) {
+                        /* Death
+                        2017-08-06T12:17:01 21060.664 INF GMSG: Player 'Halp' died
+                        */
+                        /* Logon
+                        017-08-06T12:15:02 20941.150 INF [NET] PlayerConnected EntityID=-1, PlayerID='', OwnerID='', PlayerName=''
+                        2017-08-06T12:15:02 20941.307 INF PlayerLogin: Halp/Alpha 16.2
+                        2017-08-06T12:15:02 20941.307 INF Client IP: 10.0.7.123
+                        2017-08-06T12:15:02 20941.307 INF [Steamworks.NET] Auth.AuthenticateUser()
+                        2017-08-06T12:15:02 20941.308 INF [Steamworks.NET] Authenticating player: Halp SteamId: 76561197976155858 TicketLen: 1024 Result: k_EBeginAuthSessionResultOK
+                        2017-08-06T12:15:02 20941.657 INF [Steamworks.NET] Authentication callback. ID: 76561197976155858, owner: 76561197976155858, result: k_EAuthSessionResponseOK
+                        2017-08-06T12:15:02 20941.657 INF Steam authentication successful, allowing user: EntityID=-1, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
+                        2017-08-06T12:15:02 20941.657 INF Allowing player with id 76561197976155858
+                        2017-08-06T12:15:03 20942.457 INF RequestToEnterGame: 76561197976155858/Halp
+                        2017-08-06T12:15:11 20950.007 INF RequestToSpawnPlayer: 171, Halp, 8
+                        2017-08-06T12:15:11 20950.016 INF Created player with id=171
+                        2017-08-06T12:15:24 20963.531 INF GMSG: Player 'Halp' joined the game
+                        2017-08-06T12:15:24 20963.531 INF PlayerSpawnedInWorld (reason: JoinMultiplayer, position: -3121, 91, 1078): EntityID=171, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
+                        */
+                        // 2017-08-10T16:42:12 3748.634 INF GMSG: Player 'Ja ne, is klar!' left the game
+                        final String message = line.substring(endoftimestamp + 11);
+                        RequestBuffer.request(() -> {
+                            channel.sendMessage(message);
+                        });
+                    }
+                }
+            }
         } else if (line.substring(0, 3).equals("Day") || line.substring(0, 13).equals("Game version:")) {
             /* Result from gettime
             2017-08-06T12:18:54 21173.339 INF Executing command 'gettime' by Telnet from 10.0.7.123:32776
@@ -48,41 +98,7 @@ public class SdtdMessageParser {
             RequestBuffer.request(() -> {
                 channel.sendMessage(message);
             });
-        } else if (
-                line.length() > 50
-                        && line.substring(33, 45).equals("GMSG: Player")
-                        && (
-                                line.substring(line.length() - 4).equals("died")
-                                        || line.substring(line.length() - 15).equals("joined the game")
-                                        || line.substring(line.length() - 13).equals("left the game")
-                )
-                ) {
-            /* Death
-            2017-08-06T12:17:01 21060.664 INF GMSG: Player 'Halp' died
-            */
-            /* Logon
-            017-08-06T12:15:02 20941.150 INF [NET] PlayerConnected EntityID=-1, PlayerID='', OwnerID='', PlayerName=''
-            2017-08-06T12:15:02 20941.307 INF PlayerLogin: Halp/Alpha 16.2
-            2017-08-06T12:15:02 20941.307 INF Client IP: 10.0.7.123
-            2017-08-06T12:15:02 20941.307 INF [Steamworks.NET] Auth.AuthenticateUser()
-            2017-08-06T12:15:02 20941.308 INF [Steamworks.NET] Authenticating player: Halp SteamId: 76561197976155858 TicketLen: 1024 Result: k_EBeginAuthSessionResultOK
-            2017-08-06T12:15:02 20941.657 INF [Steamworks.NET] Authentication callback. ID: 76561197976155858, owner: 76561197976155858, result: k_EAuthSessionResponseOK
-            2017-08-06T12:15:02 20941.657 INF Steam authentication successful, allowing user: EntityID=-1, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
-            2017-08-06T12:15:02 20941.657 INF Allowing player with id 76561197976155858
-            2017-08-06T12:15:03 20942.457 INF RequestToEnterGame: 76561197976155858/Halp
-            2017-08-06T12:15:11 20950.007 INF RequestToSpawnPlayer: 171, Halp, 8
-            2017-08-06T12:15:11 20950.016 INF Created player with id=171
-            2017-08-06T12:15:24 20963.531 INF GMSG: Player 'Halp' joined the game
-            2017-08-06T12:15:24 20963.531 INF PlayerSpawnedInWorld (reason: JoinMultiplayer, position: -3121, 91, 1078): EntityID=171, PlayerID='76561197976155858', OwnerID='76561197976155858', PlayerName='Halp'
-            */
-            // 2017-08-10T16:42:12 3748.634 INF GMSG: Player 'Ja ne, is klar!' left the game
-            final String message = line.substring(39);
-            RequestBuffer.request(() -> {
-                channel.sendMessage(message);
-            });
         }
-
-
     }
 
 /*
