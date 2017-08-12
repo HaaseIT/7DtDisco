@@ -54,7 +54,7 @@ public class SdtdMessageParser {
                                     && !line.substring(endoftimestamp + 11, endoftimestamp + 20).equals("'Server':")
                             ) {
                         // 2017-08-10T16:52:19 4356.184 INF Chat: 'Lahme Wade': Yeah!
-                        final String message = line.substring(39);
+                        final String message = line.substring(endoftimestamp + 29);
                         RequestBuffer.request(() -> {
                             channel.sendMessage(message);
                         });
