@@ -6,6 +6,8 @@ It will connect to a Discord channel and optionally to a second channel, the adm
 
 Text typed into the first channel will be transmitted into game chat, text typed into the adminchannel will be transmitted into the telnet console, so make sure, the adminchannel is only allowed for admins!
 
+![Chat example](https://www.oldworld.de/_img/7dtdbotchat.png "Chat example")
+
 ## Required command line arguments
 * token - The Discord bot token 
 * channel - The channel ID of the playerchannel
