@@ -19,8 +19,10 @@ public class SdtdMessageParser {
                 telnetHandler.write("version");
             } else if (line.equals("/time")) {
                 telnetHandler.write("gettime");
+            } else if (line.equals("/players")) {
+                telnetHandler.write("listplayers");
             } else if (line.equals("/help")) {
-                final String message = "Available commands: /time /version /help";
+                final String message = "Available commands: /time /version /players /help";
                 RequestBuffer.request(() -> {
                     channel.sendMessage(message);
                 });
@@ -88,7 +90,11 @@ public class SdtdMessageParser {
                     }
                 }
             }
-        } else if (line.substring(0, 3).equals("Day") || line.substring(0, 13).equals("Game version:")) {
+        } else if (
+                line.substring(0, 3).equals("Day")
+                        || line.substring(0, 13).equals("Game version:")
+                        || line.substring(0, 9).equals("Total of ")
+                ) {
             /* Result from gettime
             2017-08-06T12:18:54 21173.339 INF Executing command 'gettime' by Telnet from 10.0.7.123:32776
             Day 128, 11:24

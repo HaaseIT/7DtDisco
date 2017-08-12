@@ -24,6 +24,7 @@ public class MessageHandler {
     public void setChannel(String channel) {
         this.channel = discordClient.getChannelByID(Long.parseLong(channel));
         this.messageParser = new SdtdMessageParser(this.channel, telnetHandler);
+        discordClient.changePlayingText("Type /help for help.");
     }
 
     public void setAdminChannel(String channel) {
