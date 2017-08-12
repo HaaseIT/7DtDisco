@@ -21,8 +21,10 @@ public class SdtdMessageParser {
                 telnetHandler.write("gettime");
             } else if (line.equals("/players")) {
                 telnetHandler.write("listplayers");
-            } else if (line.equals("/help")) {
-                final String message = "Available commands: /time /version /players /help";
+            } else if (line.equals("/info")) {
+                final String message = "**Info:** This bot relays chat messages to and from a 7 Days To Die server as well as running commands to get information from the server.\n"
+                        + "**Source code, instructions and the compiled executable:** https://github.com/HaaseIT/7DtDisco\n"
+                        + "**Available commands:** /time, /version, /players, /info";
                 RequestBuffer.request(() -> {
                     channel.sendMessage(message);
                 });
