@@ -93,6 +93,36 @@ public class SdtdMessageParser {
             2017-08-06T12:18:54 21173.339 INF Executing command 'gettime' by Telnet from 10.0.7.123:32776
             Day 128, 11:24
             */
+            if (line.substring(0, 3).equals("Day")) {
+                String[] timepieces = line.split(" ");
+                String day = timepieces[1];
+                day = day.replace(",", "");
+                int dayint = Integer.parseInt(day);
+                int daystohorde = ((dayint / 7) + 1) * 7 - dayint;
+                if (daystohorde == 7) {
+                    daystohorde = 0;
+                }
+
+                boolean daysmessageshownalready = false;
+                if (daystohorde == 0 || daystohorde == 6) {
+                    String[] daytimepieces = timepieces[2].split(":");
+                    int hour = Integer.parseInt(daytimepieces[0]);
+                    int minute = Integer.parseInt(daytimepieces[1]);
+
+                    if (daystohorde == 0 && hour < 22) {
+                        line = line + "\nThe horde comes tonight!";
+                        daysmessageshownalready = true;
+                    } else if ((daystohorde == 0 && hour >= 22) || (daystohorde == 6 && hour < 4)) {
+                        daysmessageshownalready = true;
+                        line = line + "\nThe horde is rampaging now!";
+                    }
+
+                }
+                if (!daysmessageshownalready) {
+                    line = line + "\n" + daystohorde + " days to next horde.";
+                }
+            }
+
             // Game version: Alpha 16.2 (b7) Compatibility Version: Alpha 16.2
             final String message = line;
             RequestBuffer.request(() -> {
