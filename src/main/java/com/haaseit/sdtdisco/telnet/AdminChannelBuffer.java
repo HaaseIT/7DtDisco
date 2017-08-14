@@ -21,13 +21,10 @@ public class AdminChannelBuffer {
 
         return new Thread() {
             @Override
-            public void run()
-            {
-                try
-                {
-                    while (isRunning)
-                    {
-                        // todo: zeit seit letztem writeToBuffer messen, wenn länger als 1 sekunde und buffer != null flush()
+            public void run() {
+                try {
+                    while (isRunning) {
+                        // check time since last writeToBuffer, if longer than 1 second and the buffer != null, flush()
                         if (buffer.length() >= 1000) {
                             flush();
                         }
@@ -38,9 +35,7 @@ public class AdminChannelBuffer {
                             }
                         }
                     }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

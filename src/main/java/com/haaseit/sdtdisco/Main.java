@@ -16,7 +16,6 @@ public class Main {
     public static void main(String[] args) {
         Options options = new Options();
         options.addOption("token", true, "The discord auth token for the bot.");
-//        options.addOption("guild", true, "The discord guild to listen to.");
         options.addOption("channel", true, "The discord channel to listen to.");
         options.addOption("adminchannel", true, "The discord admin channel to listen to.");
         options.addOption("7dtdhost", true, "The 7dtd Server host/ip.");
@@ -56,12 +55,11 @@ public class Main {
                 adminchannel = line.getOptionValue("adminchannel");
             }
         } catch (ParseException e) {
-            System.err.println( "Parsing CLI arguments failed.  Reason: " + e.getMessage() );
+            System.err.println("Parsing CLI arguments failed.  Reason: " + e.getMessage());
             System.exit(1);
         }
 
         try {
-            // discord
             IDiscordClient discordClient = createClient(token, true);
             EventDispatcher discordDispatcher = discordClient.getDispatcher();
 
@@ -73,8 +71,7 @@ public class Main {
 
             discordDispatcher.registerListener(new EventListener(channel, adminchannel, messageHandler));
 
-
-            Thread reader = th.startReader(sdtdhost, sdtdport);
+            Thread reader = th.startReader();
             reader.run();
 
             th.close();

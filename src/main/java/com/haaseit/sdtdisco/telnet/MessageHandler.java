@@ -2,7 +2,6 @@ package com.haaseit.sdtdisco.telnet;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.util.RequestBuffer;
 
 public class MessageHandler {
     private IDiscordClient discordClient;
@@ -11,7 +10,6 @@ public class MessageHandler {
     private IChannel adminchannel = null;
 
     private AdminChannelBuffer adminChannelBuffer = null;
-    private Thread adminChannelBufferThread = null;
 
     private SdtdMessageParser messageParser = null;
 
@@ -30,11 +28,16 @@ public class MessageHandler {
     public void setAdminChannel(String channel) {
         this.adminchannel = discordClient.getChannelByID(Long.parseLong(channel));
         adminChannelBuffer = new AdminChannelBuffer(this.adminchannel);
+
+        // the admin channel can send loads of text, so we have to buffer its output. we could of course send it line by
+        // line, but the discord buffer would then send it to the channel very slowly (around 1 line per 2 seconds or
+        // so), so we collect some text and hand it over to the discord buffer
+        Thread adminChannelBufferThread;
         adminChannelBufferThread = adminChannelBuffer.startBuffer();
         adminChannelBufferThread.run();
     }
 
-    public void handleMessageFromTelnet(String line) {
+    void handleMessageFromTelnet(String line) {
         if (line == null) {
             return;
         }
@@ -45,8 +48,12 @@ public class MessageHandler {
 
         if (adminchannel != null) {
             adminChannelBuffer.writeToBuffer(line);
-            // todo: wenn servernachricht mit timestamp am anfang eintrifft, buffer flushen
-            if (line.substring(4, 5).equals("-") && line.substring(7, 8).equals("-") && line.substring(10, 11).equals("T")) {
+            // if we get a message with a timestamp at the beginning, we flush the buffer
+            if (
+                    line.substring(4, 5).equals("-")
+                            && line.substring(7, 8).equals("-")
+                            && line.substring(10, 11).equals("T")
+                    ) {
                 adminChannelBuffer.flush();
             }
             // 2017-08-06T09:07:29 9688.240 INF Executing command 'listplayers' by Telnet from 10.0.7.123:56674

@@ -17,6 +17,7 @@ public class EventListener {
         this.messageHandler = messageHandler;
     }
 
+    // almost everything within discord can only take place once the ready event is triggered
     @EventSubscriber
     public void onReadyEvent(ReadyEvent event) {
         messageHandler.setChannel(channel);
@@ -29,16 +30,16 @@ public class EventListener {
     @EventSubscriber
     public void onMessageReceivedEvent(MessageReceivedEvent event) {
         if (event.getChannel().getStringID().equals(channel)) {
-            //System.out.println(Helper.getCurrentLocalDateTimeFormatted() + " Channel: " + event.getAuthor().getName() + "> " + event.getMessage().getContent());
-            // todo: regular channel should send everything except whitelisted commands (eg. /time) to server by "Say".
+            // regular channel will send everything except whitelisted commands (eg. /time) to server by "Say".
             messageHandler.handleMessageFromChannel(event.getAuthor().getName(), event.getMessage().getContent());
-        } else if (adminchannel != null && event.getChannel().getStringID().equals(adminchannel)) {
-            //System.out.println(Helper.getCurrentLocalDateTimeFormatted() + " Admin: " + event.getAuthor().getName() + "> " + event.getMessage().getContent());
-            messageHandler.handleMessageFromAdminChannel(event.getMessage().getContent());
-        } else if (event.getChannel().isPrivate()) {
-            System.out.println(Helper.getCurrentLocalDateTimeFormatted() + " Direct: " + event.getAuthor().getName() + "> " + event.getMessage().getContent());
-            // todo: direct messages should only listen to whitelisted commands
-        }
 
+        } else if (adminchannel != null && event.getChannel().getStringID().equals(adminchannel)) {
+            // admin channel will send everything directly to telnet console
+            messageHandler.handleMessageFromAdminChannel(event.getMessage().getContent());
+
+        } else if (event.getChannel().isPrivate()) {
+            // handling of direct messages is not implemented, will only be output to console
+            System.out.println(Helper.getCurrentLocalDateTimeFormatted() + " Direct: " + event.getAuthor().getName() + "> " + event.getMessage().getContent());
+        }
     }
 }

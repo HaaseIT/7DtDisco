@@ -16,11 +16,10 @@ public class TelnetHandler {
     private String sdtdpwd;
 
     public TelnetHandler(String sdtdhost, String sdtdport, String sdtdpwd) {
-        // telnet
         this.tc = new TelnetClient();
         this.sdtdhost = sdtdhost;
         this.sdtdport = sdtdport;
-        this.sdtdpwd =sdtdpwd;
+        this.sdtdpwd = sdtdpwd;
     }
 
     public void setMessageHandler(MessageHandler messageHandler) {
@@ -43,12 +42,12 @@ public class TelnetHandler {
      * pattern is discarded and what was read up until the pattern is
      * returned.
      */
-    public String readUntil(String pattern) throws IOException {
+    String readUntil(String pattern) throws IOException {
         char lastChar = pattern.charAt(pattern.length() - 1);
         StringBuilder sb = new StringBuilder();
         int c;
 
-        while((c = in.read()) != -1) {
+        while ((c = in.read()) != -1) {
             char ch = (char) c;
             char skip = 0x0000;
             if (ch == skip) {
@@ -56,9 +55,9 @@ public class TelnetHandler {
             }
 //            System.out.print(ch);
             sb.append(ch);
-            if(ch == lastChar) {
+            if (ch == lastChar) {
                 String str = sb.toString();
-                if(str.endsWith(pattern)) {
+                if (str.endsWith(pattern)) {
                     return str;
                 }
             }
@@ -67,15 +66,13 @@ public class TelnetHandler {
         return null;
     }
 
-    public Thread startReader(String sdtdhost, String sdtdport) {
+    public Thread startReader() {
         return new Thread() {
             @Override
-            public void run()
-            {
+            public void run() {
                 String line;
 
-                try
-                {
+                try {
                     while (true) {
                         if (!tc.isConnected()) {
                             sleep(5000);
@@ -88,9 +85,7 @@ public class TelnetHandler {
                             }
                         }
                     }
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -102,13 +97,13 @@ public class TelnetHandler {
     /**
      * Writes the value to the output stream.
      */
-    public void write(String value) {
+    void write(String value) {
         out.println(value);
         out.flush();
 //        System.out.println(value);
     }
 
-    public void logon() {
+    void logon() {
         try {
             this.tc.connect(sdtdhost, Integer.parseInt(sdtdport));
             this.in = tc.getInputStream();
