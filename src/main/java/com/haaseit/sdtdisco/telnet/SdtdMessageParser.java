@@ -52,7 +52,6 @@ class SdtdMessageParser {
             if (endoftimestamp > 21) {
                 // any relevant message will have at least 17 chars after the end of timestamp
                 if (line.length() >= endoftimestamp + 17) {
-                    final String message;
                     boolean messagepresent = false;
 
                     // we filter out chat messages that originated by ourselves (Chat: 'Server':)
@@ -64,7 +63,6 @@ class SdtdMessageParser {
                             )
                             ) {
                         // 2017-08-10T16:52:19 4356.184 INF Chat: 'Lahme Wade': Yeah!
-                        message = line.substring(endoftimestamp + 11);
                         messagepresent = true;
                     } else if (
                             line.substring(endoftimestamp + 5, endoftimestamp + 17).equals("GMSG: Player")
@@ -79,11 +77,11 @@ class SdtdMessageParser {
                         2017-08-06T12:15:24 20963.531 INF GMSG: Player 'Halp' joined the game
                         2017-08-10T16:42:12 3748.634 INF GMSG: Player 'Ja ne, is klar!' left the game
                         */
-                        message = line.substring(endoftimestamp + 11);
                         messagepresent = true;
                     }
 
                     if (messagepresent) {
+                        final String message = line.substring(endoftimestamp + 11);
                         RequestBuffer.request(() -> {
                             channel.sendMessage(message);
                         });
