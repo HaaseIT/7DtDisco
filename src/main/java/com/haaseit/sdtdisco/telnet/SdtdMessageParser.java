@@ -89,9 +89,9 @@ class SdtdMessageParser {
                 }
             }
         } else if (
-                line.substring(0, 3).equals("Day")
-                        || line.substring(0, 13).equals("Game version:")
-                        || line.substring(0, 9).equals("Total of ")
+                (line.length() > 3 && line.substring(0, 3).equals("Day"))
+                        || (line.length() > 9 && line.substring(0, 9).equals("Total of "))
+                        || (line.length() > 13 && line.substring(0, 13).equals("Game version:"))
                 ) {
             /* Sample messages:
             Day 128, 11:24
