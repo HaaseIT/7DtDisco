@@ -26,15 +26,12 @@ public class MessageHandler {
     }
 
     public void setAdminChannel(String channel) {
-        this.adminchannel = discordClient.getChannelByID(Long.parseLong(channel));
-        adminChannelBuffer = new AdminChannelBuffer(this.adminchannel);
-
         // the admin channel can send loads of text, so we have to buffer its output. we could of course send it line by
         // line, but the discord buffer would then send it to the channel very slowly (around 1 line per 2 seconds or
         // so), so we collect some text and hand it over to the discord buffer
-        Thread adminChannelBufferThread;
-        adminChannelBufferThread = adminChannelBuffer.startBuffer();
-        adminChannelBufferThread.run();
+        this.adminchannel = discordClient.getChannelByID(Long.parseLong(channel));
+        adminChannelBuffer = new AdminChannelBuffer(this.adminchannel, "adminChannelBuffer");
+        adminChannelBuffer.start();
     }
 
     void handleMessageFromTelnet(String line) {

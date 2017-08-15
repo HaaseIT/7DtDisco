@@ -6,44 +6,44 @@ import sx.blah.discord.handle.obj.IChannel;
 import java.util.Date;
 
 
-public class AdminChannelBuffer {
+public class AdminChannelBuffer implements Runnable {
     private volatile String buffer = "";
-    private volatile boolean isRunning = false;
+    private boolean isRunning = false;
     private IChannel adminChannel = null;
     private volatile long lastWrite = 0;
+    private Thread t;
+    private String threadName;
 
-    AdminChannelBuffer(IChannel adminChannel) {
+    AdminChannelBuffer(IChannel adminChannel, String threadName) {
         this.adminChannel = adminChannel;
+        this.threadName = threadName;
     }
 
-    Thread startBuffer() {
-        isRunning = true;
-
-        return new Thread() {
-            @Override
-            public void run() {
-                try {
-                    while (isRunning) {
-                        // check time since last writeToBuffer, if longer than 1 second and the buffer != null, flush()
-                        if (buffer.length() >= 1000) {
-                            flush();
-                        }
-                        if (lastWrite != 0 && !buffer.isEmpty()) {
-                            long now = new Date().getTime();
-                            if (now - lastWrite > 1) {
-                                flush();
-                            }
-                        }
+    public void run() {
+        try {
+            isRunning = true;
+            while (isRunning) {
+                // check time since last writeToBuffer, if longer than 1 second and the buffer != null, flush()
+                if (buffer.length() >= 1000) {
+                    flush();
+                }
+                if (lastWrite != 0 && !buffer.isEmpty()) {
+                    long now = new Date().getTime();
+                    if (now - lastWrite > 1) {
+                        flush();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
-        };
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void stop() {
-        isRunning = false;
+    public void start() {
+        if (t == null) {
+            t = new Thread(this, threadName);
+            t.start();
+        }
     }
 
     void writeToBuffer(String line) {
