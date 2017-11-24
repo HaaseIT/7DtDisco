@@ -33,7 +33,7 @@ public class AdminChannelBuffer implements Runnable {
                         flush();
                     }
                 }
-                Thread.sleep(500);
+                Thread.sleep(250);
             }
         } catch (Exception e) {
             e.printStackTrace();
